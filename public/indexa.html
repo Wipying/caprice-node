@@ -1,0 +1,134 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>My App</title>
+	</head>
+	<body>
+		<script src="javascripts/external/underscore.js"></script>
+		<script src="javascripts/external/jquery-2.1.1.min.js"></script>
+		<script src="javascripts/external/backbone.js"></script>
+		<script>
+		Book = Backbone.Model.extend({
+			urlRoot:'http://127.0.0.1:8080/books',
+			initialize: function(){
+				this.on('change', function(){
+					if(this.hasChanged('name')){
+						//console.log('name has been changed from '+this.previous('name')+' to '+ this.get('name'));
+					}
+					//console.log(this.changed);
+				});
+				this.on('invalid', function(model, error){
+					console.log('Validation error: '+ error);
+				});
+			},
+			defaults: {
+				name: 'Beginning backbone.js',
+				author: 'James Sugrue',
+				year: 2001
+			},
+			printDetails: function(){
+				console.log(this.get('name')+' by '+this.get('author'));
+			},
+			validate: function(attrs){
+				if( attrs.year === undefined){
+					return 'Year must be existed.';
+				}
+				if(attrs.year<2000){
+					return 'Year must be after 2000';
+				}
+				if(!attrs.name){
+					return 'A name must be provided';
+				}
+			},
+			parse: function(response, xhr){
+				response.bookType = 'ebook';
+				return response;
+			}
+		});
+
+		var myBook = new Book();
+		
+		if(0) myBook.save(myBook.attributes,{
+			success: function(model, response, options){
+				console.log('Model saved');
+				console.log('Id: '+myBook.get('id'))
+			},
+			error: function(model, xhr, options){
+				console.log('Failed to save the model');
+			}
+		});
+
+		if(0) myBook.fetch({
+			success: function(model, response, options){
+				console.log('Fetch success');
+			},
+			error: function(model, response, options){
+				console.log('Fetch failed');
+			}
+		});
+
+		if(0) myBook.destroy({
+			success: function(model, response, options){
+				console.log('Destroy success');
+			},
+			error: function(model, response, options){
+				console.log('Destroy error');
+			},
+			wait: true
+		});
+
+
+
+		if(0) EBook = Book.extend({
+			getWebLink: function(){
+				return 'http://www.apress.com/'+this.get('name');
+			},
+			printDetails: function () {
+				console.log('An ebook');
+				Book.prototype.printDetails.call(this);
+			}
+		});
+		if(0){
+			var ebook = new EBook({name: "Beginning Backbone", author: "James Sugrue"});
+			console.log(ebook.getWebLink());
+			ebook.printDetails();
+		}
+
+		var Library = Backbone.Collection.extend({mode: Book, 
+			initialize: function(){
+				console.log('Creating a new library collection.');
+
+				this.on('add', function(){
+					console.log(arguments);
+				});
+
+				this.on('remove', function(removeModel, models, options){
+					console.log('element removed at '+options.index);
+				});
+
+				this.on('reset', function(){
+					console.log('the library collection reseted.');
+				});
+			}
+		});
+
+
+		var bookOne = new Book({name: 'Beginning Backbone', author: 'James Sugrue'});
+		var bookTwo = new Book({name: 'Ruby on Rails tutorial', author: 'Michael Heartl'});
+		var bookThree = new Book({name: 'Pro node.js for developers', author: 'Colin J. Ihrig'});
+		var books = [];
+				books.push(bookOne); books.push(bookTwo);
+
+		var myLibrary = new Library(books);
+				myLibrary.add(bookThree);
+				console.log('Library contains '+myLibrary.length+' books');
+				myLibrary.reset();
+				console.log('Library contains '+myLibrary.size()+' books');
+
+
+
+
+		</script>
+	</body>
+</html>
